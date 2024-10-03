@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#Transfer a file from the client to a server
+
+errorMsg="Usage: 0-transfer_file PATH_TO_FILE IP USERNAME PATH_TO_SSH_KEY"
+PATH_TO_FILE="$1"
+IP="$2"
+USERNAME="$3"
+PATH_TO_SSH_KEY="$4"
+
+if [ "$#" -lt 3 ]; then
+	echo "$errorMsg"
+else
+	if [ -n "$4" ]; then
+		scp -o StrictHostKeyChecking=no -i "$PATH_TO_SSH_KEY" "$PATH_TO_FILE" "$USERNAME"@"$IP":~/
+	else
+		scp -o StrictHostKeyChecking=no "$PATH_TO_FILE" "$USERNAME"@"$IP":~/
+	fi
+fi
