@@ -11,6 +11,9 @@ RESULTS_FOLDER = './results'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
+# Predefined password for authentication
+PASSWORD = "your_password_here"  # Replace this with your actual password
+
 # Helper function to save uploaded files
 def save_uploaded_file(uploaded_file):
     filepath = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
@@ -19,7 +22,12 @@ def save_uploaded_file(uploaded_file):
     return filepath
 
 # Set the page layout (wide mode can be disabled here)
-st.set_page_config(layout="centered")
+# st.set_page_config(layout="centered")
+st.set_page_config(
+    page_title="Your Custom Title",  # Change this to the title you want
+    page_icon="🛠️",  # You can use an emoji or a file path to a favicon image (e.g., 'favicon.png')
+    layout="centered"
+)
 
 # Inject custom CSS to control the title and content
 custom_css = """
@@ -46,7 +54,10 @@ st.markdown(custom_css, unsafe_allow_html=True)
 # Custom HTML for the title with a centered style
 st.markdown("<div class='title-container'><h1>Welcome to Marius Moldovan's Price Scraper</h1></div>", unsafe_allow_html=True)
 
-# Streamlit UI
+# Password input field
+password_input = st.text_input("Enter Password to Start Scraping", type="password")
+
+# Streamlit UI for file upload
 uploaded_file = st.file_uploader("Upload your Excel file", type=["xlsx"])
 
 if uploaded_file:
@@ -54,28 +65,31 @@ if uploaded_file:
     input_filepath = save_uploaded_file(uploaded_file)
     st.success(f"File '{uploaded_file.name}' uploaded successfully!")
 
-    # Button to start scraping
+    # Check password and start scraping if correct
     if st.button("Start Scraping"):
-        output_filename = f"pricing_{datetime.datetime.now().strftime('%I-%M%p_%d-%m-%Y')}.xlsx"
-        output_filepath = os.path.join(RESULTS_FOLDER, output_filename)
+        if password_input == PASSWORD:
+            output_filename = f"pricing_{datetime.datetime.now().strftime('%I-%M%p_%d-%m-%Y')}.xlsx"
+            output_filepath = os.path.join(RESULTS_FOLDER, output_filename)
 
-        # Run the scraper in a separate thread
-        scraper_thread = threading.Thread(target=run_scraper, args=(input_filepath, output_filepath))
-        scraper_thread.start()
+            # Run the scraper in a separate thread
+            scraper_thread = threading.Thread(target=run_scraper, args=(input_filepath, output_filepath))
+            scraper_thread.start()
 
-        st.write("Scraping in progress... Please wait.")
+            st.write("⏳ Please wait... Scraping is in progress...")
 
-        # Wait for the scraping to complete
-        scraper_thread.join()  
+            # Wait for the scraping to complete
+            scraper_thread.join()
 
-        # Provide the download option after scraping
-        if os.path.exists(output_filepath):
-            with open(output_filepath, "rb") as file:
-                st.download_button(
-                    label="Download Results",
-                    data=file,
-                    file_name=output_filename,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+            # Provide the download option after scraping
+            if os.path.exists(output_filepath):
+                with open(output_filepath, "rb") as file:
+                    st.download_button(
+                        label="Download Results",
+                        data=file,
+                        file_name=output_filename,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+        else:
+            st.error("❌ Incorrect password. Please try again.")
 else:
     st.info("Please upload a valid Excel file to start scraping.")
