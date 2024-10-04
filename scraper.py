@@ -32,20 +32,22 @@ def run_scraper(input_file, output_file):
         for sheet_name in xls.sheet_names:
             df = pd.read_excel(xls, sheet_name=sheet_name)
             results = []  # Store scraped data
-            
+
             for index, row in df.iterrows():
                 # Extract URL, XPATH, REMARKS, and RRP columns
                 url = row['URL']
                 xpath = row['XPATH']
                 remarks = row['REMARKS']
                 rrp = row['RRP']
-                
+
                 # Scrape the URL
                 try:
                     driver.get(url)  # Navigate to the URL
+                    if xpath.endswith("text()"):
+                        xpath = xpath.rstrip("text()")
                     elements = driver.find_elements(By.XPATH, xpath)  # Find elements using XPATH
                     price = "N/A"  # Default value in case price extraction fails
-                    
+
                     # Extract price if elements are found
                     if elements:
                         price_text = elements[0].text  # Get the text from the element
@@ -61,7 +63,7 @@ def run_scraper(input_file, output_file):
                         'RRP': rrp  # Preserve RRP from the input
                     })
                     print(f"saved row {index} in with {price} to {sheet_name}")
-                    time.sleep(3)  # Small delay between requests
+                    time.sleep(10)  # Small delay between requests
                     # break
                 except Exception as e:
                     print(f"Error processing {url}: {e}")
@@ -71,7 +73,7 @@ def run_scraper(input_file, output_file):
             result_df = pd.DataFrame(results)
             result_df.to_excel(writer, sheet_name=sheet_name, index=False)  # Save sheet data
             print("saved all sheets")
-            break
-    
+            # break
+
     # Quit the WebDriver after scraping
     driver.quit()
