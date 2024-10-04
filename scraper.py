@@ -43,8 +43,8 @@ def run_scraper(input_file, output_file):
                 # Scrape the URL
                 try:
                     driver.get(url)  # Navigate to the URL
-                    if xpath.endswith("text()"):
-                        xpath = xpath.rstrip("text()")
+                    if str(xpath).endswith("text()"):
+                        xpath = str(xpath).rstrip("text()")
                     elements = driver.find_elements(By.XPATH, xpath)  # Find elements using XPATH
                     price = "N/A"  # Default value in case price extraction fails
 
